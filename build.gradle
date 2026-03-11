@@ -16,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -26,6 +27,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:5.0.1")
+    implementation 'org.example:UberProject-EntityService:0.0.2-SNAPSHOT'
 }
 
 tasks.named('test') {

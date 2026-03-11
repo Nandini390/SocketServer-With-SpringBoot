@@ -55,4 +55,3 @@ public class TestController {
         simpMessagingTemplate.convertAndSendToUser(userId,"/queue/privateMessage/"+room, response);
     }
 }
-
