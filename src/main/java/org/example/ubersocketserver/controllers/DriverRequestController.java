@@ -4,6 +4,7 @@ import org.example.ubersocketserver.dtos.RideRequestDto;
 import org.example.ubersocketserver.dtos.RideResponseDto;
 import org.example.ubersocketserver.dtos.UpdateBookingRequestDto;
 import org.example.ubersocketserver.dtos.UpdateBookingResponseDto;
+import org.example.ubersocketserver.events.BookingLifecycleEvent;
 import org.example.ubersocketserver.producers.KafkaProducerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/socket")
@@ -28,32 +30,57 @@ public class DriverRequestController {
         this.kafkaProducerService=kafkaProducerService;
     }
 
-    @GetMapping
-    public Boolean help(){
-        kafkaProducerService.publishMessage("sample-topic","Hello");
-        return true;
-    }
-
     @PostMapping("/newRide")
     public ResponseEntity<Boolean> raiseRideRequest(@RequestBody RideRequestDto requestDto){
        sendDriversNewRideRequest(requestDto);
+       kafkaProducerService.publishDriverLifecycleEvent(BookingLifecycleEvent.builder()
+               .bookingId(requestDto.getBookingId())
+               .passengerId(requestDto.getPassengerId())
+               .driverId(null)
+               .eventType("RIDE_REQUEST_DISPATCHED")
+               .bookingStatus("ASSIGNING_DRIVER")
+               .source("UberSocketServer")
+               .message("Ride request dispatched to candidate drivers")
+               .occurredAt(LocalDateTime.now())
+               .build());
        return new ResponseEntity<>(Boolean.TRUE,HttpStatus.OK);
     }
 
     public void sendDriversNewRideRequest(RideRequestDto requestDto){
-        //ToDo: ideally the request should only send to nearby drivers, but for simplicity we have sended to everyone
-       simpMessagingTemplate.convertAndSend("/topic/rideRequest", requestDto);
+        if (requestDto.getDriverIds() == null || requestDto.getDriverIds().isEmpty()) {
+            return;
+        }
+        requestDto.getDriverIds().forEach(driverId ->
+                simpMessagingTemplate.convertAndSend("/topic/rideRequest/" + driverId, requestDto)
+        );
     }
 
     @MessageMapping("/rideResponse/{userId}")
     public synchronized void rideResponseHandler(@DestinationVariable String userId , RideResponseDto responseDto){
-        System.out.println(responseDto.getResponse()+" "+userId);
+        if (!Boolean.TRUE.equals(responseDto.response)) {
+            return;
+        }
+
         UpdateBookingRequestDto requestDto=UpdateBookingRequestDto.builder()
-                                           .driverId(Optional.of(Long.parseLong(userId)))
-                                           .bookingStatus("SCHEDULED")
+                                           .driverId(UUID.fromString(userId))
+                                           .bookingStatus("ACCEPTED")
                                            .build();
-        ResponseEntity<UpdateBookingResponseDto> result = this.restTemplate.postForEntity("http://localhost:8080/api/v1/booking/"+responseDto.bookingId,requestDto, UpdateBookingResponseDto.class);
-        kafkaProducerService.publishMessage("sample-topic","Hello");
+
+        ResponseEntity<UpdateBookingResponseDto> result = this.restTemplate.postForEntity(
+                "http://localhost:8080/api/v1/booking/" + responseDto.bookingId + "/assign-driver",
+                requestDto,
+                UpdateBookingResponseDto.class
+        );
+        kafkaProducerService.publishDriverLifecycleEvent(BookingLifecycleEvent.builder()
+                .bookingId(responseDto.bookingId)
+                .passengerId(result.getBody() != null ? result.getBody().getPassengerId() : null)
+                .driverId(UUID.fromString(userId))
+                .eventType("DRIVER_ACCEPTED")
+                .bookingStatus(result.getBody() != null && result.getBody().getBookingStatus() != null ? result.getBody().getBookingStatus().name() : "ACCEPTED")
+                .source("UberSocketServer")
+                .message("Driver accepted booking through socket response")
+                .occurredAt(LocalDateTime.now())
+                .build());
         System.out.println(result.getStatusCode());
     }
 }

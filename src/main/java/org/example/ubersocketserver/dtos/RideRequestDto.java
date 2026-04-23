@@ -1,9 +1,10 @@
 package org.example.ubersocketserver.dtos;
 
 import lombok.*;
-import org.example.ubersocketserver.Models.ExactLocation;
+import org.example.uberprojectentityservice.Models.ExactLocation;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -11,9 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RideRequestDto {
-    private Long passengerId;
+    private UUID passengerId;
     private ExactLocation startLocation;
     private ExactLocation endLocation;
-    private List<Long> driverIds;
-    private Long bookingId;
+    private List<UUID> driverIds;
+    private UUID bookingId;
 }

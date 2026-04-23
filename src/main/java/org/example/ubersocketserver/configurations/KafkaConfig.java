@@ -19,8 +19,18 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public NewTopic sampleTopic(){
-        return new NewTopic("sample-topic",1,(short) 1);
+    public NewTopic bookingLifecycleTopic(){
+        return new NewTopic("booking.lifecycle",1,(short) 1);
+    }
+
+    @Bean
+    public NewTopic driverLifecycleTopic(){
+        return new NewTopic("driver.lifecycle",1,(short) 1);
+    }
+
+    @Bean
+    public NewTopic paymentLifecycleTopic(){
+        return new NewTopic("payment.lifecycle",1,(short) 1);
     }
 
     @Bean
@@ -51,7 +61,7 @@ public class KafkaConfig {
                 "localhost:9092");
         props.put(
                 ConsumerConfig.GROUP_ID_CONFIG,
-                "sample-group");
+                "socket-driver-lifecycle-group");
         props.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class);
@@ -62,11 +72,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String>
-    kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
 
-        ConcurrentKafkaListenerContainerFactory<String, String> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

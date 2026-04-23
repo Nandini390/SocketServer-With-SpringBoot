@@ -2,6 +2,8 @@ package org.example.ubersocketserver.dtos;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -9,5 +11,5 @@ import lombok.*;
 @NoArgsConstructor
 public class RideResponseDto {
     public Boolean response;
-    public Long bookingId;
+    public UUID bookingId;
 }

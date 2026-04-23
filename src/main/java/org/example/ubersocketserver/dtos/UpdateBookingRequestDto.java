@@ -2,7 +2,7 @@ package org.example.ubersocketserver.dtos;
 
 import lombok.*;
 
-import java.util.Optional;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -11,5 +11,6 @@ import java.util.Optional;
 @NoArgsConstructor
 public class UpdateBookingRequestDto {
     private String bookingStatus;
-    private Optional<Long> driverId;
+    private UUID driverId;
+    private String cancellationReason;
 }
