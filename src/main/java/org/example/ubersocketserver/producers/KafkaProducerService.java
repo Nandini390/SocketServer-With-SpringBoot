@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class KafkaProducerService {
-    public static final String DRIVER_LIFECYCLE_TOPIC = "driver.lifecycle";
 
+    public static final String DRIVER_LIFECYCLE_TOPIC = "driver.lifecycle";
     private final KafkaTemplate<String,String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
