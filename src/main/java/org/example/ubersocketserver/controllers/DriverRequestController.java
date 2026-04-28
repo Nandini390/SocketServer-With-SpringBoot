@@ -2,6 +2,7 @@ package org.example.ubersocketserver.controllers;
 
 import org.example.ubersocketserver.dtos.RideRequestDto;
 import org.example.ubersocketserver.dtos.RideResponseDto;
+import org.example.ubersocketserver.dtos.DriverDecisionRequestDto;
 import org.example.ubersocketserver.dtos.UpdateBookingRequestDto;
 import org.example.ubersocketserver.dtos.UpdateBookingResponseDto;
 import org.example.ubersocketserver.events.BookingLifecycleEvent;
@@ -58,6 +59,15 @@ public class DriverRequestController {
     @MessageMapping("/rideResponse/{userId}")
     public synchronized void rideResponseHandler(@DestinationVariable String userId , RideResponseDto responseDto){
         if (!Boolean.TRUE.equals(responseDto.response)) {
+            DriverDecisionRequestDto rejectRequest = DriverDecisionRequestDto.builder()
+                    .driverId(UUID.fromString(userId))
+                    .reason(responseDto.reason)
+                    .build();
+            this.restTemplate.postForEntity(
+                    "http://localhost:8080/api/v1/booking/" + responseDto.bookingId + "/reject-driver",
+                    rejectRequest,
+                    UpdateBookingResponseDto.class
+            );
             return;
         }
 

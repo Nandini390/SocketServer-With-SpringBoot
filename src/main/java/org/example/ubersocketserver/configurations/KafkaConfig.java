@@ -34,6 +34,16 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic notificationLifecycleTopic(){
+        return new NewTopic("notification.lifecycle",1,(short) 1);
+    }
+
+    @Bean
+    public NewTopic driverTrackingTopic(){
+        return new NewTopic("driver.tracking",1,(short) 1);
+    }
+
+    @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
@@ -46,11 +56,6 @@ public class KafkaConfig {
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 StringSerializer.class);
         return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<String,String> kafkaTemplate(){
-        return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
@@ -77,5 +82,10 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
+    }
+
+    @Bean
+    public KafkaTemplate<String,String> kafkaTemplate(){
+        return new KafkaTemplate<>(producerFactory());
     }
 }

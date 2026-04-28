@@ -12,4 +12,5 @@ import java.util.UUID;
 public class RideResponseDto {
     public Boolean response;
     public UUID bookingId;
+    public String reason;
 }
