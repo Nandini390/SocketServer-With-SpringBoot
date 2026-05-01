@@ -64,7 +64,7 @@ public class DriverRequestController {
                     .reason(responseDto.reason)
                     .build();
             this.restTemplate.postForEntity(
-                    "http://localhost:8080/api/v1/booking/" + responseDto.bookingId + "/reject-driver",
+                    "http://localhost:8089/api/v1/booking/" + responseDto.bookingId + "/reject-driver",
                     rejectRequest,
                     UpdateBookingResponseDto.class
             );
@@ -77,7 +77,7 @@ public class DriverRequestController {
                                            .build();
 
         ResponseEntity<UpdateBookingResponseDto> result = this.restTemplate.postForEntity(
-                "http://localhost:8080/api/v1/booking/" + responseDto.bookingId + "/assign-driver",
+                "http://localhost:8089/api/v1/booking/" + responseDto.bookingId + "/assign-driver",
                 requestDto,
                 UpdateBookingResponseDto.class
         );
